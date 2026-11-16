@@ -1,5 +1,5 @@
 name = "tugas-pbo-d1"
-main = "src/index.html"
+main = "src/index.js"
 compatibility_date = "2026-11-16"
 
 [[d1_databases]]
