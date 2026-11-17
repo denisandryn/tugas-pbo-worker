@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen User - OOP & Pewarisan</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; font-weight: 600; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Header / Navbar (Visible when logged in) -->
+    <header id="appNavbar" class="hidden bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-600 text-white p-2 rounded-lg font-bold text-xl">
+                        <i class="fa-solid fa-cubes"></i>
+                    </div>
+                    <span class="font-bold text-lg text-slate-900 tracking-tight">UserApp <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase font-semibold">PBO Demo</span></span>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="flex space-x-6 h-full items-center">
+                    <button onclick="app.switchTab('table')" id="tabNavTable" class="px-3 py-2 text-sm text-slate-600 hover:text-blue-600 font-medium transition flex items-center gap-2">
+                        <i class="fa-solid fa-users"></i> Tabel User
+                    </button>
+                    <button onclick="app.switchTab('profile')" id="tabNavProfile" class="px-3 py-2 text-sm text-slate-600 hover:text-blue-600 font-medium transition flex items-center gap-2">
+                        <i class="fa-solid fa-user-gear"></i> Profil Saya
+                    </button>
+                    <button onclick="app.openOopModal()" class="px-3 py-2 text-sm text-purple-600 hover:text-purple-800 bg-purple-50 rounded-lg font-medium transition flex items-center gap-2">
+                        <i class="fa-solid fa-code-branch"></i> Konsep OOP
+                    </button>
+                </nav>
+
+                <!-- Current Logged User Info & Logout -->
+                <div class="flex items-center gap-3">
+                    <img id="navAvatar" src="" alt="Avatar" class="w-9 h-9 rounded-full border border-slate-300 object-cover">
+                    <div class="hidden sm:block text-left">
+                        <p id="navUsername" class="text-sm font-semibold leading-tight text-slate-800"></p>
+                        <p id="navRoleBadge" class="text-xs font-medium"></p>
+                    </div>
+                    <button onclick="app.logout()" class="ml-2 text-slate-400 hover:text-rose-600 p-2 rounded-lg transition" title="Keluar">
+                        <i class="fa-solid fa-right-from-bracket text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow flex items-center justify-center p-4 sm:p-6 lg:p-8">
+
+        <!-- ================= FORM 1: LOGIN VIEW ================= -->
+        <section id="loginView" class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-slate-100 my-auto">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl mb-3">
+                    <i class="fa-solid fa-user-lock text-2xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-900">Masuk Akun</h1>
+                <p class="text-sm text-slate-500 mt-1">Sistem Manajemen User dengan Konsep OOP</p>
+            </div>
+
+            <form id="loginForm" onsubmit="app.handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Username</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+                        <input type="text" id="loginUsername" required class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition" placeholder="Masukkan username">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <i class="fa-solid fa-key"></i>
+                        </span>
+                        <input type="password" id="loginPassword" required class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 transition duration-200">
+                    <i class="fa-solid fa-right-to-bracket mr-2"></i> Masuk Sistem
+                </button>
+            </form>
+
+            <!-- Quick Demo Credentials -->
+            <div class="mt-8 pt-6 border-t border-slate-100">
+                <p class="text-xs font-semibold text-slate-400 uppercase text-center mb-3">Demo Credentials (Uji Coba Quick Login)</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" onclick="app.quickLogin('admin', 'admin123')" class="p-3 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl text-left transition group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-indigo-700 uppercase">Admin Demo</span>
+                            <i class="fa-solid fa-shield-halved text-indigo-500 group-hover:scale-110 transition"></i>
+                        </div>
+                        <p class="text-xs text-indigo-900 font-mono mt-1">admin / admin123</p>
+                    </button>
+                    <button type="button" onclick="app.quickLogin('user1', 'user123')" class="p-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl text-left transition group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-700 uppercase">User Demo</span>
+                            <i class="fa-solid fa-user text-slate-500 group-hover:scale-110 transition"></i>
+                        </div>
+                        <p class="text-xs text-slate-800 font-mono mt-1">user1 / user123</p>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- DASHBOARD CONTAINER (Visible after Login) -->
+        <div id="dashboardView" class="hidden w-full max-w-7xl mx-auto space-y-6">
+
+            <!-- Banner Role Context Header -->
+            <div id="roleBanner" class="p-4 rounded-2xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div id="roleIcon" class="w-10 h-10 rounded-xl flex items-center justify-center text-xl"></div>
+                    <div>
+                        <h2 id="roleBannerTitle" class="font-bold text-slate-900"></h2>
+                        <p id="roleBannerDesc" class="text-xs text-slate-600 mt-0.5"></p>
+                    </div>
+                </div>
+                <div class="text-xs bg-white/80 px-3 py-1.5 rounded-lg border font-mono text-slate-600">
+                    <i class="fa-solid fa-layer-group text-blue-500 mr-1"></i> Class: <span id="currentClassInstance" class="font-bold text-slate-900"></span>
+                </div>
+            </div>
+
+            <!-- ================= FORM 2: PROFIL VIEW ================= -->
+            <section id="profileSection" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- User Card Preview -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center text-center">
+                    <img id="profileCardAvatar" src="" alt="Avatar" class="w-28 h-28 rounded-full border-4 border-blue-50 shadow-md object-cover mb-4">
+                    <h3 id="profileCardName" class="text-xl font-bold text-slate-900"></h3>
+                    <p id="profileCardEmail" class="text-sm text-slate-500 mb-3"></p>
+                    <span id="profileCardBadge" class="px-3 py-1 rounded-full text-xs font-semibold mb-4"></span>
+
+                    <div class="w-full border-t border-slate-100 pt-4 mt-auto text-left">
+                        <h4 class="text-xs font-bold uppercase text-slate-400 mb-2">Izin Akses Objek (Inherited Permissions):</h4>
+                        <ul id="profilePermissionsList" class="space-y-1.5 text-xs text-slate-600"></ul>
+                    </div>
+                </div>
+
+                <!-- Form Edit Profile -->
+                <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="border-b border-slate-100 pb-4 mb-6 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Pengaturan Profil</h3>
+                            <p class="text-xs text-slate-500">Perbarui informasi profil yang tersimpan di Local Storage.</p>
+                        </div>
+                        <span class="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-1 rounded">Method: setProfile()</span>
+                    </div>
+
+                    <form id="profileForm" onsubmit="app.handleUpdateProfile(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Username (ID Read-only)</label>
+                                <input type="text" id="editUsername" disabled class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-sm font-medium text-slate-500 cursor-not-allowed">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Peran / Role</label>
+                                <input type="text" id="editRole" disabled class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-sm font-medium text-slate-500 cursor-not-allowed uppercase">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email</label>
+                            <input type="email" id="editEmail" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">URL Avatar (Foto Profil)</label>
+                            <input type="url" id="editAvatar" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Bio Singkat</label>
+                            <textarea id="editBio" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="Tuliskan bio singkat anda..."></textarea>
+                        </div>
+
+                        <div class="pt-2 flex justify-end">
+                            <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow transition text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan Profil
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ================= FORM 3: TABEL USER & CRUD VIEW ================= -->
+            <section id="tableSection" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <!-- Action Bar (Search & Create Button) -->
+                <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/50">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900">Daftar Pengguna Sistem</h3>
+                        <p class="text-xs text-slate-500">Menampilkan data penguna yang dikelola menggunakan class objek.</p>
+                    </div>
+
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <!-- Search input -->
+                        <div class="relative flex-grow sm:flex-grow-0">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            </span>
+                            <input type="text" id="searchInput" oninput="app.renderUserTable()" placeholder="Cari nama / email..." class="w-full sm:w-64 pl-9 pr-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+
+                        <!-- Filter Role -->
+                        <select id="roleFilter" onchange="app.renderUserTable()" class="border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="ALL">Semua Peran</option>
+                            <option value="admin">Admin</option>
+                            <option value="user">User</option>
+                        </select>
+
+                        <!-- Add User Button (Controlled by Admin Permission) -->
+                        <button id="btnOpenAddModal" onclick="app.openUserModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow flex items-center gap-2 shrink-0 transition">
+                            <i class="fa-solid fa-user-plus"></i> Tambah User
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table Content -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100/70 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                                <th class="py-3.5 px-4">Pengguna</th>
+                                <th class="py-3.5 px-4">Email</th>
+                                <th class="py-3.5 px-4">Peran (Role / Class)</th>
+                                <th class="py-3.5 px-4">Bio</th>
+                                <th class="py-3.5 px-4 text-center">Aksi (CRUD)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody" class="divide-y divide-slate-100 text-sm">
+                            <!-- Rows injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="p-4 bg-slate-50 border-t border-slate-100 text-xs text-slate-500 flex justify-between items-center">
+                    <span>Total Pengguna: <strong id="totalUsersCount" class="text-slate-800">0</strong></span>
+                    <span id="crudPermissionHint" class="italic"></span>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- MODAL 1: ADD / EDIT USER FORM (ADMIN ONLY) -->
+    <div id="userModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all">
+            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
+                <h3 id="modalTitle" class="font-bold text-lg">Tambah User Baru</h3>
+                <button onclick="app.closeUserModal()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form id="userModalForm" onsubmit="app.handleSaveUser(event)" class="p-6 space-y-4">
+                <input type="hidden" id="modalUserId">
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Username</label>
+                    <input type="text" id="modalUsername" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div id="modalPasswordContainer">
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
+                    <input type="password" id="modalPassword" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email</label>
+                    <input type="email" id="modalEmail" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Peran (Instansiasi Class Objek)</label>
+                    <select id="modalRole" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <option value="user">Regular User (Class RegularUser)</option>
+                        <option value="admin">Administrator (Class AdminUser)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Bio / Deskripsi</label>
+                    <textarea id="modalBio" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Bio singkat..."></textarea>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3 border-t border-slate-100">
+                    <button type="button" onclick="app.closeUserModal()" class="px-4 py-2 border border-slate-300 text-slate-600 hover:bg-slate-50 text-sm font-medium rounded-xl transition">Batal</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-check"></i> Simpan Data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: OOP & INHERITANCE EXPLANATION DRAWER -->
+    <div id="oopModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-purple-900 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-graduation-cap text-purple-300 text-xl"></i>
+                    <h3 class="font-bold text-lg">Konsep Pewarisan (Inheritance) Pada Aplikasi Ini</h3>
+                </div>
+                <button onclick="app.closeOopModal()" class="text-purple-300 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-6 text-slate-700 text-sm">
+                <div class="bg-purple-50 border border-purple-200 p-4 rounded-xl">
+                    <h4 class="font-bold text-purple-900 mb-1">Struktur Hirarki Class</h4>
+                    <p class="text-xs text-purple-800">
+                        Aplikasi ini mendemonstrasikan <strong>Object-Oriented Programming (OOP)</strong> menggunakan Javascript ES6 Class. 
+                        Class <code class="bg-purple-200 px-1 rounded font-bold">AdminUser</code> dan <code class="bg-purple-200 px-1 rounded font-bold">RegularUser</code> mewarisi sifat dasar dari Superclass <code class="bg-purple-200 px-1 rounded font-bold">User</code>.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="border border-slate-200 p-4 rounded-xl bg-slate-50">
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Superclass / Base Class</span>
+                        <h5 class="font-bold text-slate-900 text-base mt-1 mb-2">Class User</h5>
+                        <ul class="list-disc pl-5 space-y-1 text-xs text-slate-600">
+                            <td><strong>Properti:</strong> id, username, email, role, avatar, bio</td>
+                            <td><strong>Method:</strong> getProfile(), setProfile(), checkPassword()</td>
+                        </ul>
+                    </div>
+
+                    <div class="border border-purple-200 p-4 rounded-xl bg-purple-50/50">
+                        <span class="text-xs font-bold text-purple-600 uppercase tracking-wider">Subclass / Derived Classes</span>
+                        <h5 class="font-bold text-slate-900 text-base mt-1 mb-2">AdminUser & RegularUser</h5>
+                        <ul class="list-disc pl-5 space-y-1 text-xs text-slate-600">
+                            <td>Menggunakan keyword <code class="bg-slate-200 px-1 rounded">extends User</code></td>
+                            <td>Menggunakan <code class="bg-slate-200 px-1 rounded">super(...)</code> untuk inisialisasi parent</td>
+                            <td><strong class="text-purple-700">AdminUser:</strong> Menambahkan method CRUD (createUser, updateUser, deleteUser)</td>
+                            <td><strong class="text-slate-700">RegularUser:</strong> Terbatas hanya aksi Read & Update Profil sendiri</td>
+                        </ul>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-slate-900 mb-2">Implementasi Source Code JS:</h4>
+                    <pre class="bg-slate-900 text-emerald-400 p-4 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed">
+// 1. Superclass (Parent)
+class User {
+    constructor(id, username, password, email, role = 'user', avatar = '', bio = '') {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.role = role;
+        this.avatar = avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`;
+        this.bio = bio;
+    }
+    setProfile(email, avatar, bio) {
+        this.email = email;
+        this.avatar = avatar;
+        this.bio = bio;
+    }
+}
+
+// 2. Subclass Admin (Mewarisi User)
+class AdminUser extends User {
+    constructor(id, username, password, email, avatar, bio) {
+        super(id, username, password, email, 'admin', avatar, bio); // Pewarisan
+        this.permissions = ['CREATE', 'READ', 'UPDATE', 'DELETE', 'MANAGE_USERS'];
+    }
+    createUser(userList, newUserObj) { /* Logic Tambah User */ }
+    updateUser(userList, targetId, updatedData) { /* Logic Edit User */ }
+    deleteUser(userList, targetId) { /* Logic Hapus User */ }
+}
+
+// 3. Subclass Regular User (Mewarisi User)
+class RegularUser extends User {
+    constructor(id, username, password, email, avatar, bio) {
+        super(id, username, password, email, 'user', avatar, bio); // Pewarisan
+        this.permissions = ['READ', 'UPDATE_SELF'];
+    }
+}</pre>
+                </div>
+            </div>
+
+            <div class="bg-slate-100 px-6 py-3 flex justify-end">
+                <button onclick="app.closeOopModal()" class="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white font-medium text-xs rounded-lg transition">Tutup Penjelasan</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= JAVASCRIPT OOP LOGIC ================= -->
+    <script>
+        /**
+         * 1. BASE CLASS: User (Superclass)
+         * Mendefinisikan properti dan method dasar penggunan.
+         */
+        class User {
+            constructor(id, username, password, email, role = 'user', avatar = '', bio = '') {
+                this.id = id;
+                this.username = username;
+                this.password = password;
+                this.email = email;
+                this.role = role;
+                this.avatar = avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`;
+                this.bio = bio || 'Belum ada bio.';
+            }
+
+            // Method mendapatkan profil
+            getProfile() {
+                return {
+                    id: this.id,
+                    username: this.username,
+                    email: this.email,
+                    role: this.role,
+                    avatar: this.avatar,
+                    bio: this.bio
+                };
+            }
+
+            // Method memperbarui profil dasar
+            setProfile(email, avatar, bio) {
+                if (email) this.email = email;
+                if (avatar) this.avatar = avatar;
+                if (bio !== undefined) this.bio = bio;
+            }
+
+            // Validasi autentikasi
+            checkPassword(inputPassword) {
+                return this.password === inputPassword;
+            }
+        }
+
+        /**
+         * 2. DERIVED CLASS: AdminUser (Subclass yang mewarisi User)
+         * Memiliki hak akses penuh (CRUD) untuk mengelola data user lain.
+         */
+        class AdminUser extends User {
+            constructor(id, username, password, email, avatar = '', bio = '') {
+                // Memanggil constructor dari Superclass (User)
+                super(id, username, password, email, 'admin', avatar, bio);
+                
+                // Properti khusus Admin
+                this.permissions = ['CREATE_USER', 'READ_USER', 'UPDATE_USER', 'DELETE_USER', 'MANAGE_ALL'];
+                this.adminLevel = 'Super Administrator';
+            }
+
+            // Method Tambah User Baru (Create)
+            createUser(rawUsersList, userData) {
+                const newId = 'USR-' + Date.now();
+                let newUser;
+                if (userData.role === 'admin') {
+                    newUser = new AdminUser(newId, userData.username, userData.password, userData.email, userData.avatar, userData.bio);
+                } else {
+                    newUser = new RegularUser(newId, userData.username, userData.password, userData.email, userData.avatar, userData.bio);
+                }
+                rawUsersList.push(newUser);
+                return newUser;
+            }
+
+            // Method Update User lain (Update)
+            updateUser(rawUsersList, targetId, updatedData) {
+                const index = rawUsersList.findIndex(u => u.id === targetId);
+                if (index !== -1) {
+                    rawUsersList[index].username = updatedData.username;
+                    rawUsersList[index].email = updatedData.email;
+                    rawUsersList[index].role = updatedData.role;
+                    rawUsersList[index].bio = updatedData.bio;
+                    if (updatedData.password) {
+                        rawUsersList[index].password = updatedData.password;
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            // Method Hapus User (Delete)
+            deleteUser(rawUsersList, targetId) {
+                const index = rawUsersList.findIndex(u => u.id === targetId);
+                if (index !== -1) {
+                    // Mencegah menghapus akun diri sendiri saat ini jika diperlukan
+                    rawUsersList.splice(index, 1);
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        /**
+         * 3. DERIVED CLASS: RegularUser (Subclass yang mewarisi User)
+         * Memiliki hak akses terbatas (hanya bisa ubah profil sendiri dan lihat tabel).
+         */
+        class RegularUser extends User {
+            constructor(id, username, password, email, avatar = '', bio = '') {
+                // Memanggil constructor Superclass
+                super(id, username, password, email, 'user', avatar, bio);
+                
+                // Properti khusus Regular User
+                this.permissions = ['READ_USER', 'UPDATE_SELF_PROFILE'];
+            }
+        }
+
+        /**
+         * 4. APP MANAGER CLASS (Mengendalikan State, DOM UI & Local Storage)
+         */
+        class AppManager {
+            constructor() {
+                this.users = []; // Kumpulan Instansi Class User / AdminUser / RegularUser
+                this.currentUser = null; // Instansi user yang sedang login
+                this.STORAGE_KEY = 'OOP_USER_APP_DATA_V1';
+                this.activeTab = 'table'; // Default view
+                
+                this.initData();
+            }
+
+            // Inisialisasi data & Seeding awal jika localStorage kosong
+            initData() {
+                const stored = localStorage.getItem(this.STORAGE_KEY);
+
+                if (!stored) {
+                    // Seed Data Awal
+                    const initialAdmins = [
+                        new AdminUser('USR-101', 'admin', 'admin123', 'admin@dev.id', 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin', 'Administrator Utama Sistem OOP'),
+                    ];
+                    const initialUsers = [
+                        new RegularUser('USR-102', 'user1', 'user123', 'user1@dev.id', 'https://api.dicebear.com/7.x/avataaars/svg?seed=user1', 'Software Engineer & Member'),
+                        new RegularUser('USR-103', 'user2', 'user123', 'user2@dev.id', 'https://api.dicebear.com/7.x/avataaars/svg?seed=user2', 'UI/UX Designer'),
+                    ];
+                    this.users = [...initialAdmins, ...initialUsers];
+                    this.saveToStorage();
+                } else {
+                    // Restore dari Local Storage dan Melakukan Re-Instansiasi Class
+                    try {
+                        const parsed = JSON.parse(stored);
+                        this.users = parsed.map(item => {
+                            if (item.role === 'admin') {
+                                return new AdminUser(item.id, item.username, item.password, item.email, item.avatar, item.bio);
+                            } else {
+                                return new RegularUser(item.id, item.username, item.password, item.email, item.avatar, item.bio);
+                            }
+                        });
+                    } catch (e) {
+                        console.error('Gagal parsing local storage', e);
+                    }
+                }
+            }
+
+            // Simpan Array Objek ke LocalStorage
+            saveToStorage() {
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.users));
+            }
+
+            // Notification Toast Helper
+            showToast(message, type = 'success') {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                const bgColor = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-blue-600';
+                const icon = type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info';
+
+                toast.className = `${bgColor} text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 text-sm font-medium transition duration-300 transform translate-y-2 pointer-events-auto`;
+                toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+                
+                container.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-[-10px]');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            // Login Logic
+            handleLogin(e) {
+                e.preventDefault();
+                const u = document.getElementById('loginUsername').value.trim();
+                const p = document.getElementById('loginPassword').value.trim();
+
+                const foundUser = this.users.find(user => user.username === u);
+
+                if (foundUser && foundUser.checkPassword(p)) {
+                    this.currentUser = foundUser;
+                    this.showToast(`Selamat datang kembali, ${foundUser.username}!`);
+                    this.renderDashboard();
+                } else {
+                    this.showToast('Username atau password salah!', 'error');
+                }
+            }
+
+            // Quick Demo Login Helper
+            quickLogin(username, password) {
+                document.getElementById('loginUsername').value = username;
+                document.getElementById('loginPassword').value = password;
+                this.handleLogin(new Event('submit'));
+            }
+
+            // Logout Logic
+            logout() {
+                this.currentUser = null;
+                document.getElementById('appNavbar').classList.add('hidden');
+                document.getElementById('dashboardView').classList.add('hidden');
+                document.getElementById('loginView').classList.remove('hidden');
+                document.getElementById('loginForm').reset();
+                this.showToast('Berhasil keluar dari sistem.', 'info');
+            }
+
+            // Navigation Tab Switcher
+            switchTab(tabName) {
+                this.activeTab = tabName;
+                const profileSec = document.getElementById('profileSection');
+                const tableSec = document.getElementById('tableSection');
+                const tabNavTable = document.getElementById('tabNavTable');
+                const tabNavProfile = document.getElementById('tabNavProfile');
+
+                if (tabName === 'profile') {
+                    profileSec.classList.remove('hidden');
+                    tableSec.classList.add('hidden');
+                    tabNavProfile.classList.add('tab-active');
+                    tabNavTable.classList.remove('tab-active');
+                    this.populateProfileForm();
+                } else {
+                    profileSec.classList.add('hidden');
+                    tableSec.classList.remove('hidden');
+                    tabNavTable.classList.add('tab-active');
+                    tabNavProfile.classList.remove('tab-active');
+                    this.renderUserTable();
+                }
+            }
+
+            // Render Entire Dashboard view based on Logged-in User Class Role
+            renderDashboard() {
+                document.getElementById('loginView').classList.add('hidden');
+                document.getElementById('appNavbar').classList.remove('hidden');
+                document.getElementById('dashboardView').classList.remove('hidden');
+
+                // Navbar Info
+                document.getElementById('navUsername').textContent = this.currentUser.username;
+                document.getElementById('navAvatar').src = this.currentUser.avatar;
+
+                const roleBadge = document.getElementById('navRoleBadge');
+                if (this.currentUser instanceof AdminUser) {
+                    roleBadge.className = 'text-xs font-bold text-indigo-600 uppercase';
+                    roleBadge.textContent = 'Admin (Full Access)';
+                } else {
+                    roleBadge.className = 'text-xs font-semibold text-slate-500 uppercase';
+                    roleBadge.textContent = 'Regular User (Read Only)';
+                }
+
+                // Render Role Banner Context
+                const banner = document.getElementById('roleBanner');
+                const icon = document.getElementById('roleIcon');
+                const title = document.getElementById('roleBannerTitle');
+                const desc = document.getElementById('roleBannerDesc');
+                const classInst = document.getElementById('currentClassInstance');
+
+                if (this.currentUser instanceof AdminUser) {
+                    banner.className = 'p-4 rounded-2xl border bg-indigo-50/80 border-indigo-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4';
+                    icon.className = 'w-10 h-10 rounded-xl flex items-center justify-center text-xl bg-indigo-600 text-white';
+                    icon.innerHTML = '<i class="fa-solid fa-shield-halved"></i>';
+                    title.textContent = `Mode Akses: Administrator (${this.currentUser.username})`;
+                    desc.textContent = 'Anda memiliki akses ke method CRUD: createUser(), updateUser(), & deleteUser().';
+                    classInst.textContent = 'AdminUser (extends User)';
+                    document.getElementById('btnOpenAddModal').classList.remove('hidden');
+                    document.getElementById('crudPermissionHint').textContent = '* Status: Anda memiliki izin penuh untuk mengedit / menghapus pengguna.';
+                } else {
+                    banner.className = 'p-4 rounded-2xl border bg-slate-100 border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4';
+                    icon.className = 'w-10 h-10 rounded-xl flex items-center justify-center text-xl bg-slate-600 text-white';
+                    icon.innerHTML = '<i class="fa-solid fa-user-lock"></i>';
+                    title.textContent = `Mode Akses: Regular User (${this.currentUser.username})`;
+                    desc.textContent = 'Akses terbatas. Anda hanya dapat melihat tabel data & mengubah profil sendiri.';
+                    classInst.textContent = 'RegularUser (extends User)';
+                    document.getElementById('btnOpenAddModal').classList.add('hidden');
+                    document.getElementById('crudPermissionHint').textContent = '* Status: Tombol Aksi CRUD dinonaktifkan karena Anda bukan AdminUser.';
+                }
+
+                this.switchTab('table');
+            }
+
+            // Populate Form 2 (Profile)
+            populateProfileForm() {
+                const user = this.currentUser;
+                document.getElementById('profileCardAvatar').src = user.avatar;
+                document.getElementById('profileCardName').textContent = user.username;
+                document.getElementById('profileCardEmail').textContent = user.email;
+
+                const badge = document.getElementById('profileCardBadge');
+                badge.textContent = user.role.toUpperCase();
+                badge.className = user instanceof AdminUser 
+                    ? 'px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-300'
+                    : 'px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300';
+
+                // Render Inherited Permissions List
+                const permList = document.getElementById('profilePermissionsList');
+                permList.innerHTML = '';
+                user.permissions.forEach(p => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<i class="fa-solid fa-check text-emerald-500 mr-1.5"></i> <code>${p}</code>`;
+                    permList.appendChild(li);
+                });
+
+                // Populate Form Inputs
+                document.getElementById('editUsername').value = user.username;
+                document.getElementById('editRole').value = user.role;
+                document.getElementById('editEmail').value = user.email;
+                document.getElementById('editAvatar').value = user.avatar;
+                document.getElementById('editBio').value = user.bio || '';
+            }
+
+            // Handle Profile Update Form Submission
+            handleUpdateProfile(e) {
+                e.preventDefault();
+                const email = document.getElementById('editEmail').value.trim();
+                const avatar = document.getElementById('editAvatar').value.trim();
+                const bio = document.getElementById('editBio').value.trim();
+
+                // Call Superclass Method setProfile()
+                this.currentUser.setProfile(email, avatar, bio);
+
+                // Update Array & LocalStorage
+                const index = this.users.findIndex(u => u.id === this.currentUser.id);
+                if (index !== -1) {
+                    this.users[index] = this.currentUser;
+                    this.saveToStorage();
+                }
+
+                this.showToast('Profil berhasil diperbarui!');
+                this.populateProfileForm();
+                document.getElementById('navAvatar').src = avatar;
+            }
+
+            // Render Form 3 (User Table Data View)
+            renderUserTable() {
+                const tbody = document.getElementById('userTableBody');
+                const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+                const roleFilter = document.getElementById('roleFilter').value;
+
+                tbody.innerHTML = '';
+
+                // Filter Data
+                const filteredUsers = this.users.filter(u => {
+                    const matchSearch = u.username.toLowerCase().includes(searchQuery) || u.email.toLowerCase().includes(searchQuery);
+                    const matchRole = roleFilter === 'ALL' || u.role === roleFilter;
+                    return matchSearch && matchRole;
+                });
+
+                document.getElementById('totalUsersCount').textContent = filteredUsers.length;
+
+                if (filteredUsers.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Tidak ada pengguna yang cocok ditemukan.</td></tr>`;
+                    return;
+                }
+
+                const isAdminLoggedIn = this.currentUser instanceof AdminUser;
+
+                filteredUsers.forEach(u => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 transition';
+
+                    const roleBadgeClass = u.role === 'admin' 
+                        ? 'bg-indigo-100 text-indigo-700 font-bold border-indigo-200' 
+                        : 'bg-slate-100 text-slate-700 border-slate-200';
+                    
+                    const classType = u.role === 'admin' ? 'AdminUser' : 'RegularUser';
+
+                    // Action buttons disabled if user is RegularUser
+                    const actionButtons = isAdminLoggedIn ? `
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="app.openUserModal('${u.id}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Edit User (Admin Method)">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="app.handleDeleteUser('${u.id}')" class="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Hapus User (Admin Method)">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    ` : `
+                        <div class="flex items-center justify-center gap-2 opacity-40 cursor-not-allowed" title="Aksi Dibatasi (Memerlukan Hak AdminUser)">
+                            <button disabled class="p-2 text-slate-400"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button disabled class="p-2 text-slate-400"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    `;
+
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 flex items-center gap-3">
+                            <img src="${u.avatar}" class="w-9 h-9 rounded-full object-cover border border-slate-200">
+                            <div>
+                                <p class="font-semibold text-slate-800 leading-tight">${u.username}</p>
+                                <span class="text-[10px] text-slate-400 font-mono">ID: ${u.id}</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-xs text-slate-600">${u.email}</td>
+                        <td class="py-3 px-4">
+                            <span class="px-2.5 py-1 rounded-full text-xs border ${roleBadgeClass}">${u.role.toUpperCase()}</span>
+                            <span class="block text-[10px] font-mono text-purple-600 mt-0.5">new ${classType}()</span>
+                        </td>
+                        <td class="py-3 px-4 text-xs text-slate-500 max-w-xs truncate">${u.bio || '-'}</td>
+                        <td class="py-3 px-4 text-center">${actionButtons}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // Open Modal Add/Edit
+            openUserModal(userId = null) {
+                if (!(this.currentUser instanceof AdminUser)) {
+                    this.showToast('Hanya AdminUser yang diizinkan mengelola data!', 'error');
+                    return;
+                }
+
+                const modal = document.getElementById('userModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const form = document.getElementById('userModalForm');
+                form.reset();
+
+                if (userId) {
+                    // Edit Mode
+                    modalTitle.textContent = 'Edit User (Admin Mode)';
+                    const user = this.users.find(u => u.id === userId);
+                    if (user) {
+                        document.getElementById('modalUserId').value = user.id;
+                        document.getElementById('modalUsername').value = user.username;
+                        document.getElementById('modalEmail').value = user.email;
+                        document.getElementById('modalRole').value = user.role;
+                        document.getElementById('modalBio').value = user.bio || '';
+                        document.getElementById('modalPassword').placeholder = '(Biarkan kosong jika tak diubah)';
+                    }
+                } else {
+                    // Add Mode
+                    modalTitle.textContent = 'Tambah User Baru (Admin Mode)';
+                    document.getElementById('modalUserId').value = '';
+                    document.getElementById('modalPassword').required = true;
+                    document.getElementById('modalPassword').placeholder = 'Masukkan password...';
+                }
+
+                modal.classList.remove('hidden');
+            }
+
+            closeUserModal() {
+                document.getElementById('userModal').classList.add('hidden');
+            }
+
+            // Save User (Create or Update via AdminUser Methods)
+            handleSaveUser(e) {
+                e.preventDefault();
+                if (!(this.currentUser instanceof AdminUser)) return;
+
+                const id = document.getElementById('modalUserId').value;
+                const username = document.getElementById('modalUsername').value.trim();
+                const password = document.getElementById('modalPassword').value.trim();
+                const email = document.getElementById('modalEmail').value.trim();
+                const role = document.getElementById('modalRole').value;
+                const bio = document.getElementById('modalBio').value.trim();
+
+                if (id) {
+                    // Admin Method Update
+                    const success = this.currentUser.updateUser(this.users, id, { username, email, role, bio, password });
+                    if (success) {
+                        this.showToast('User berhasil diperbarui via AdminUser.updateUser()');
+                    }
+                } else {
+                    // Admin Method Create
+                    const newUser = this.currentUser.createUser(this.users, { username, password, email, role, bio });
+                    this.showToast(`User ${newUser.username} dibuat via AdminUser.createUser()`);
+                }
+
+                this.saveToStorage();
+                this.renderUserTable();
+                this.closeUserModal();
+            }
+
+            // Delete User via Admin Method
+            handleDeleteUser(userId) {
+                if (!(this.currentUser instanceof AdminUser)) return;
+
+                const targetUser = this.users.find(u => u.id === userId);
+                if (!targetUser) return;
+
+                if (confirm(`Apakah Anda yakin ingin menghapus user "${targetUser.username}"?`)) {
+                    const success = this.currentUser.deleteUser(this.users, userId);
+                    if (success) {
+                        this.saveToStorage();
+                        this.renderUserTable();
+                        this.showToast('User berhasil dihapus via AdminUser.deleteUser()');
+                    }
+                }
+            }
+
+            // Modal OOP Explanation
+            openOopModal() {
+                document.getElementById('oopModal').classList.remove('hidden');
+            }
+
+            closeOopModal() {
+                document.getElementById('oopModal').classList.add('hidden');
+            }
+        }
+
+        // Global Instance App Manager
+        let app;
+        window.onload = function() {
+            app = new AppManager();
+        };
+    </script>
+</body>
+</html>
